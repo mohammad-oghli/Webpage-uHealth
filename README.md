@@ -22,8 +22,7 @@ The web service also has **st_ui** function included in the app to render the us
 We can run it on this [blog url](https://www.linkedin.com/pulse/leveraging-python-faas-deploy-impactful-data-ml-services-oghli/)
 
 It will give the result for checking the URLs in the blog like following:
-### URL HEALTH
-![URL Health](URL_plot/newplot.png)
+
 
 ### Brief Information
 ```
@@ -35,6 +34,9 @@ Total Broken link: 2
 Average Healthy linking: 20.31 %
 Analyzing Elapsed Time: 23.36 seconds
 ```
+### URL HEALTH
+![URL Health](URL_plot/newplot.png)
+
 ### Detailed Information
 
 **Healthy Links Source**
