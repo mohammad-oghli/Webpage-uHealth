@@ -2,7 +2,8 @@ import streamlit as st
 from bs4 import BeautifulSoup
 import requests
 from requests.sessions import Session
-from threading import Thread,local
+from requests import exceptions
+from threading import Thread, local
 from queue import Queue
 import time
 import plotly.graph_objects as plt
@@ -13,10 +14,12 @@ thread_local = local()
 h_links = []
 uh_links = []
 
+
 def get_session() -> Session:
-    if not hasattr(thread_local,'session'):
-        thread_local.session = requests.Session() # Create a new Session if not exists
+    if not hasattr(thread_local, 'session'):
+        thread_local.session = requests.Session()  # Create a new Session if not exists
     return thread_local.session
+
 
 def fetch_link() -> None:
     '''download link worker, get URL from queue until no url left in the queue'''
@@ -30,7 +33,8 @@ def fetch_link() -> None:
             uh_links.append(url)
         except requests.exceptions.Timeout:
             uh_links.append(url)
-        q.task_done()          # tell the queue, this url downloading work is done
+        q.task_done()  # tell the queue, this url downloading work is done
+
 
 def fetch_all(urls) -> None:
     thread_num = 10
@@ -38,6 +42,7 @@ def fetch_all(urls) -> None:
         t_worker = Thread(target=fetch_link())
         t_worker.start()
     q.join()
+
 
 def analyze_webpage(wp_url):
     '''
@@ -55,6 +60,8 @@ def analyze_webpage(wp_url):
     sc_links = []
     h_links = []
     uh_links = []
+    links = []
+    title = ""
     avg_h = 0.0
     try:
         wp_url = wp_url.strip()
@@ -64,13 +71,14 @@ def analyze_webpage(wp_url):
             return msg
         data = response.text
         soup = BeautifulSoup(data, "html.parser")  # create a soup object using the variable 'data'
-
-        title = soup.find('title').string.strip()
-        links = soup.findAll('a', href=True)
-        #print(links)
+        if soup.find('title'):
+            title = soup.find('title').string.strip()
+        if not soup.findAll('a', href=True) is None:
+            links = soup.findAll('a', href=True)
+        # print(links)
         if len(links) > 0:
             sc_links = scrap_links(wp_url, links)
-        #print(sc_links)
+        # print(sc_links)
 
     except requests.exceptions.ConnectionError:
         msg = "Sorry, the requested web page url is invalid."
@@ -81,19 +89,16 @@ def analyze_webpage(wp_url):
 
     for url in sc_links:
         try:
-            #if not 'linkedin' in url['sc_link']:
+            # if not 'linkedin' in url['sc_link']:
             requests.get(url['sc_link'], timeout=3)
             h_links.append(url)
-            #print(res.status_code)
-        except requests.exceptions.ConnectionError:
+            # print(res.status_code)
+        except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
             uh_links.append(url)
-        except requests.exceptions.Timeout:
-            uh_links.append(url)
-
 
     if len(links) > 0:
         avg_h = round((len(h_links) * 100) / len(sc_links), 2)
-        #avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
+        # avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
     summary = f"""____________Summary______________
 Webpage Title: {title}
 Total link: {len(sc_links)}
@@ -108,6 +113,7 @@ Average Healthy linking: {avg_h} %
     web_page['avg_h'] = avg_h
     # web_page['display'] = display_sources
     return web_page
+
 
 def analyze_webpage_opt(wp_url):
     '''
@@ -137,10 +143,10 @@ def analyze_webpage_opt(wp_url):
 
         title = soup.find('title').string.strip()
         links = soup.findAll('a', href=True)
-        #print(links)
+        # print(links)
         if len(links) > 0:
             sc_links = scrap_links(wp_url, links)
-        #print(sc_links)
+            # print(sc_links)
             for url in sc_links:
                 q.put(url)
 
@@ -150,7 +156,7 @@ def analyze_webpage_opt(wp_url):
     except requests.exceptions.MissingSchema:
         msg = "Incorrect requested url format!"
         return msg
-    #print(display_sources(sc_links))
+    # print(display_sources(sc_links))
     fetch_all(sc_links)
     # for url in sc_links:
     #     try:
@@ -162,7 +168,7 @@ def analyze_webpage_opt(wp_url):
 
     if len(links) > 0:
         avg_h = round((len(h_links) * 100) / len(sc_links), 2)
-        #avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
+        # avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
     summary = f"""____________Summary______________
 Webpage Title: {title}
 Total link: {len(sc_links)}
@@ -190,7 +196,7 @@ def st_ui():
     url = st.text_input(label='Web Site URL', placeholder='type your url')
     if url:
         start = time.time()
-        analyze_result = analyze_webpage_opt(url)
+        analyze_result = analyze_webpage(url)
         end = time.time()
         print(f'Analyzing: {end - start} seconds')
         if type(analyze_result) is dict:
