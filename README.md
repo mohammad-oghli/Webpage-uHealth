@@ -28,11 +28,11 @@ It will give the result for checking the URLs in the blog like following:
 ```
 ____________Summary______________
 Webpage Title: Leveraging Python FAAS to Deploy Impactful Data and ML Services
-Total link: 64
+Total link: 15
 Total Healthy link: 13
 Total Broken link: 2
-Average Healthy linking: 20.31 %
-Analyzing Elapsed Time: 23.36 seconds
+Average Healthy linking: 86.67 %
+Analyzing Elapsed Time: 21.36 seconds
 ```
 ### URL HEALTH
 ![URL Health](URL_plot/newplot.png)
