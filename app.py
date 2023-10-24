@@ -29,9 +29,7 @@ def fetch_link() -> None:
         try:
             session.get(url['sc_link'], timeout=3)
             h_links.append(url)
-        except requests.exceptions.ConnectionError:
-            uh_links.append(url)
-        except requests.exceptions.Timeout:
+        except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
             uh_links.append(url)
         q.task_done()  # tell the queue, this url downloading work is done
 
