@@ -131,6 +131,8 @@ def analyze_webpage_opt(wp_url):
     sc_links = []
     # h_links = []
     # uh_links = []
+    links = []
+    title = ""
     avg_h = 0.0
     try:
         wp_url = wp_url.strip()
@@ -141,8 +143,10 @@ def analyze_webpage_opt(wp_url):
         data = response.text
         soup = BeautifulSoup(data, "html.parser")  # create a soup object using the variable 'data'
 
-        title = soup.find('title').string.strip()
-        links = soup.findAll('a', href=True)
+        if soup.find('title'):
+            title = soup.find('title').string.strip()
+        if not soup.findAll('a', href=True) is None:
+            links = soup.findAll('a', href=True)
         # print(links)
         if len(links) > 0:
             sc_links = scrap_links(wp_url, links)
@@ -158,13 +162,6 @@ def analyze_webpage_opt(wp_url):
         return msg
     # print(display_sources(sc_links))
     fetch_all(sc_links)
-    # for url in sc_links:
-    #     try:
-    #         requests.get(url['sc_link'])
-    #         h_links.append(url)
-    #         #print(res.status_code)
-    #     except requests.exceptions.ConnectionError:
-    #         uh_links.append(url)
 
     if len(links) > 0:
         avg_h = round((len(h_links) * 100) / len(sc_links), 2)
