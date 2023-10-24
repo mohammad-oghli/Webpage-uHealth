@@ -5,7 +5,7 @@ This tool is useful when checking any webpage content(URLs Health) such as blog.
 
 I have optimized the service using 𝐀𝐬𝐲𝐧𝐜𝐡𝐫𝐨𝐧𝐨𝐮𝐬 𝐌𝐮𝐥𝐭𝐢-𝐓𝐡𝐫𝐞𝐚𝐝𝐢𝐧𝐠 to enhance the performance of processing the links in the webpage. It takes about 25 sec to process 200 URLs instead of at least 60 sec.
 
-### How to Call it
+## How to Call it
 
 The main app contains 2 functions:
 * analyze_webpage()
@@ -17,7 +17,7 @@ You can use either functions by passing the url of the webpage as parameter and 
 
 The web service also has **st_ui** function included in the app to render the user interface of the application and run it using [Streamlit](https://streamlit.io/).
 
-### Example of Running the Service
+## Example of Running the Service
 
 We can run it on this [blog url](https://www.linkedin.com/pulse/leveraging-python-faas-deploy-impactful-data-ml-services-oghli/)
 
