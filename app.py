@@ -191,7 +191,7 @@ def st_ui():
     url = st.text_input(label='Web Site URL', placeholder='type your url')
     if url:
         start = time.time()
-        analyze_result = analyze_webpage_opt(url)
+        analyze_result = analyze_webpage(url)
         end = time.time()
         print(f'Analyzing: {end - start} seconds')
         if type(analyze_result) is dict:
