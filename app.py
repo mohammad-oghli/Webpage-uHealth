@@ -80,10 +80,10 @@ def analyze_webpage(wp_url):
             sc_links = scrap_links(wp_url, links)
         # print(sc_links)
 
-    except requests.exceptions.ConnectionError:
+    except exceptions.ConnectionError:
         msg = "Sorry, the requested web page url is invalid."
         return msg
-    except requests.exceptions.MissingSchema:
+    except exceptions.MissingSchema:
         msg = "Incorrect requested url format!"
         return msg
 
@@ -152,10 +152,10 @@ def analyze_webpage_opt(wp_url):
             for url in sc_links:
                 q.put(url)
 
-    except requests.exceptions.ConnectionError:
+    except exceptions.ConnectionError:
         msg = "Sorry, the requested web page url is invalid."
         return msg
-    except requests.exceptions.MissingSchema:
+    except exceptions.MissingSchema:
         msg = "Incorrect requested url format!"
         return msg
     # print(display_sources(sc_links))
