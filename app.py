@@ -9,6 +9,7 @@ import time
 import plotly.graph_objects as plt
 from helper import validate_webpage, scrap_links, display_sources
 
+# Global Variables
 q = Queue(maxsize=0)
 thread_local = local()
 h_links = []
@@ -22,7 +23,7 @@ def get_session() -> Session:
 
 
 def fetch_link() -> None:
-    '''download link worker, get URL from queue until no url left in the queue'''
+    '''fetch link worker, get URL from queue until no url left in the queue'''
     session = get_session()
     while not q.empty():
         url = q.get()
@@ -31,7 +32,7 @@ def fetch_link() -> None:
             h_links.append(url)
         except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
             uh_links.append(url)
-        q.task_done()  # tell the queue, this url downloading work is done
+        q.task_done()  # tell the queue, this url fetching work is done
 
 
 def fetch_all(urls) -> None:
@@ -44,18 +45,19 @@ def fetch_all(urls) -> None:
 
 def analyze_webpage(wp_url):
     '''
-    Scrape and analyze web page data according to most common HTML tags
+    Check web page URLs health
 
     :param
     wp_url(str): Valid url of the web page
 
     :return
-    web_page(dict): Dictionary containing analytics information of the requested web page,
+    web_page(dict): Dictionary containing analytics information of the requested web page URLs,
 
     if web page url is invalid it will return message indicating url error
     '''
     web_page = {}
     sc_links = []
+    # Local h_links, uh_links variables
     h_links = []
     uh_links = []
     links = []
@@ -115,20 +117,18 @@ Average Healthy linking: {avg_h} %
 
 def analyze_webpage_opt(wp_url):
     '''
-    Scrape and analyze web page data according to most common HTML tags
+    Check web page URLs health (Optimized version using Multi-Threading)
 
     :param
     wp_url(str): Valid url of the web page
 
     :return
-    web_page(dict): Dictionary containing analytics information of the requested web page,
+    web_page(dict): Dictionary containing analytics information of the requested web page URLs,
 
     if web page url is invalid it will return message indicating url error
     '''
     web_page = {}
     sc_links = []
-    # h_links = []
-    # uh_links = []
     links = []
     title = ""
     avg_h = 0.0
