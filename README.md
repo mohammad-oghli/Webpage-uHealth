@@ -21,8 +21,8 @@ Run the following command in the project directory to start streamlit app:
 
 `streamlit run ./app.py`
 
-## Running the app using Docker
-You can run the app by building the Dockerfile image and run it
+## Running the Service using Docker
+You can run the service by building the Dockerfile image and run it
 
 First build the Dockerfile image
 
