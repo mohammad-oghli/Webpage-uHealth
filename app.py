@@ -1,45 +1,11 @@
 import streamlit as st
 from bs4 import BeautifulSoup
 import requests
-from requests.sessions import Session
 from requests import exceptions
-from threading import Thread, local
-from queue import Queue
 import time
 import plotly.graph_objects as plt
-from helper import validate_webpage, scrap_links, display_sources
-
-q = Queue(maxsize=0)
-thread_local = local()
-h_links = []
-uh_links = []
-
-
-def get_session() -> Session:
-    if not hasattr(thread_local, 'session'):
-        thread_local.session = requests.Session()  # Create a new Session if not exists
-    return thread_local.session
-
-
-def fetch_link() -> None:
-    '''download link worker, get URL from queue until no url left in the queue'''
-    session = get_session()
-    while not q.empty():
-        url = q.get()
-        try:
-            session.get(url['sc_link'], timeout=3)
-            h_links.append(url)
-        except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
-            uh_links.append(url)
-        q.task_done()  # tell the queue, this url downloading work is done
-
-
-def fetch_all(urls) -> None:
-    thread_num = 10
-    for i in range(thread_num):
-        t_worker = Thread(target=fetch_link())
-        t_worker.start()
-    q.join()
+import config
+from helper import validate_webpage, scrap_links, display_sources, fetch_all
 
 
 def analyze_webpage(wp_url):
@@ -127,6 +93,8 @@ def analyze_webpage_opt(wp_url):
     '''
     web_page = {}
     sc_links = []
+    config.h_links = []
+    config.uh_links = []
     # h_links = []
     # uh_links = []
     links = []
@@ -150,7 +118,7 @@ def analyze_webpage_opt(wp_url):
             sc_links = scrap_links(wp_url, links)
             # print(sc_links)
             for url in sc_links:
-                q.put(url)
+                config.q.put(url)
 
     except requests.exceptions.ConnectionError:
         msg = "Sorry, the requested web page url is invalid."
@@ -162,19 +130,19 @@ def analyze_webpage_opt(wp_url):
     fetch_all(sc_links)
 
     if len(links) > 0:
-        avg_h = round((len(h_links) * 100) / len(sc_links), 2)
+        avg_h = round((len(config.h_links) * 100) / len(sc_links), 2)
         # avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
     summary = f"""____________Summary______________
 Webpage Title: {title}
 Total link: {len(sc_links)}
-Total Healthy link: {len(h_links)}
-Total Broken link: {len(uh_links)}
+Total Healthy link: {len(config.h_links)}
+Total Broken link: {len(config.uh_links)}
 Average Healthy linking: {avg_h} %
 """
     web_page['s'] = summary
     web_page['href'] = len(links)
-    web_page['h_links'] = h_links
-    web_page['uh_links'] = uh_links
+    web_page['h_links'] = config.h_links
+    web_page['uh_links'] = config.uh_links
     web_page['avg_h'] = avg_h
     # web_page['display'] = display_sources
     return web_page
