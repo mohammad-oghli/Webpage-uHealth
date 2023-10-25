@@ -17,6 +17,25 @@ You can use either functions by passing the url of the webpage as parameter and 
 
 The web service also has **st_ui** function included in the app to render the user interface of the application and run it using [Streamlit](https://streamlit.io/).
 
+Run the following command in the project directory to start streamlit app:
+
+`streamlit run ./app.py`
+
+### Running the app using Docker
+You can run the app by building the Dockerfile image and run it
+
+First build the Dockerfile image
+
+`docker build -t webpage-uhealth .`
+
+Then run the app container on port **8501**
+
+`docker run -p 8501:8501 webpage-uhealth`
+
+
+
+
+
 ## Example of Running the Service
 
 We can run it on this [blog url](https://www.linkedin.com/pulse/leveraging-python-faas-deploy-impactful-data-ml-services-oghli/)
