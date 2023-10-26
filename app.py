@@ -14,6 +14,10 @@ q = Queue(maxsize=0)
 thread_local = local()
 h_links = []
 uh_links = []
+headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/118.0.0.0 Safari/537.36 '
+        }
 
 
 def get_session() -> Session:
@@ -65,7 +69,7 @@ def analyze_webpage(wp_url):
     avg_h = 0.0
     try:
         wp_url = wp_url.strip()
-        response = requests.get(wp_url)
+        response = requests.get(wp_url, headers=headers)
         if not validate_webpage(response):
             msg = "Sorry, the requested url isn't a web page."
             return msg
@@ -134,7 +138,7 @@ def analyze_webpage_opt(wp_url):
     avg_h = 0.0
     try:
         wp_url = wp_url.strip()
-        response = requests.get(wp_url)
+        response = requests.get(wp_url, headers=headers)
         if not validate_webpage(response):
             msg = "Sorry, the requested url isn't a web page."
             return msg
