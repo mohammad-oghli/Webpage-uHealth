@@ -227,9 +227,9 @@ def st_ui():
             start = time.time()
             analyze_result = analyze_webpage_opt(url)
             end = time.time()
-        st.success('Successfully Finished!')
         print(f'Analyzing: {end - start} seconds')
         if type(analyze_result) is dict:
+            st.success('Successfully Finished!')
             summary = analyze_result['s']
             st.subheader("Brief Information")
             summary += f"Analyzing Elapsed Time: {round(end - start, 2)} seconds"
