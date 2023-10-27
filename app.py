@@ -7,17 +7,19 @@ from threading import Thread, local
 from queue import Queue
 import time
 import plotly.graph_objects as plt
-from helper import validate_webpage, scrap_links, display_sources
+from helper import validate_webpage, scrap_links, plot_pie, display_sources
 
 # Global Variables
 q = Queue(maxsize=0)
 thread_local = local()
+processed_link = set()
+brk_link = set()
 h_links = []
 uh_links = []
 headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/118.0.0.0 Safari/537.36 '
-        }
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/118.0.0.0 Safari/537.36 '
+}
 
 
 def get_session() -> Session:
@@ -32,10 +34,17 @@ def fetch_link() -> None:
     while not q.empty():
         url = q.get()
         try:
-            session.get(url['sc_link'], timeout=3)
-            h_links.append(url)
+            if url['sc_link'] not in processed_link:
+                session.get(url['sc_link'], timeout=3)
+                h_links.append(url)
+                processed_link.add(url['sc_link'])
+            else:
+                if url['sc_link'] in brk_link:
+                    uh_links.append(url)
         except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
             uh_links.append(url)
+            processed_link.add(url['sc_link'])
+            brk_link.add(url['sc_link'])
         q.task_done()  # tell the queue, this url fetching work is done
 
 
@@ -64,6 +73,9 @@ def analyze_webpage(wp_url):
     # Local h_links, uh_links variables
     h_links = []
     uh_links = []
+    # Local processed_link, brk_link variables
+    processed_link = set()
+    brk_link = set()
     links = []
     title = ""
     avg_h = 0.0
@@ -93,21 +105,29 @@ def analyze_webpage(wp_url):
 
     for url in sc_links:
         try:
-            # if not 'linkedin' in url['sc_link']:
-            requests.get(url['sc_link'], timeout=3)
-            h_links.append(url)
-            # print(res.status_code)
+            if url['sc_link'] not in processed_link:
+                requests.get(url['sc_link'], timeout=3)
+                h_links.append(url)
+                processed_link.add(url['sc_link'])
+            else:
+                if url['sc_link'] in brk_link:
+                    uh_links.append(url)
         except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
             uh_links.append(url)
+            processed_link.add(url['sc_link'])
+            brk_link.add(url['sc_link'])
 
+    total_url = len(sc_links)
+    total_uh = len(uh_links)
+    total_h = total_url - total_uh
     if len(links) > 0:
-        avg_h = round((len(h_links) * 100) / len(sc_links), 2)
+        avg_h = round((total_h * 100) / total_url, 2)
         # avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
     summary = f"""____________Summary______________
 Webpage Title: {title}
-Total link: {len(sc_links)}
-Total Healthy link: {len(h_links)}
-Total Broken link: {len(uh_links)}
+Total link: {total_url}
+Total Healthy link: {total_h}
+Total Broken link: {total_uh}
 Average Healthy linking: {avg_h} %
 """
     web_page['s'] = summary
@@ -115,6 +135,9 @@ Average Healthy linking: {avg_h} %
     web_page['h_links'] = h_links
     web_page['uh_links'] = uh_links
     web_page['avg_h'] = avg_h
+    web_page['total_url'] = total_url
+    web_page['total_h'] = total_h
+    web_page['total_uh'] = total_uh
     # web_page['display'] = display_sources
     return web_page
 
@@ -164,15 +187,25 @@ def analyze_webpage_opt(wp_url):
         return msg
     # print(display_sources(sc_links))
     fetch_all(sc_links)
-
+    # Validate broken links
+    # for i, url in enumerate(uh_links):
+    #     try:
+    #         requests.get(url['sc_link'], timeout=6)
+    #         del h_links[i]
+    #         # print(res.status_code)
+    #     except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
+    #         pass
+    total_url = len(sc_links)
+    total_uh = len(uh_links)
+    total_h = total_url - total_uh
     if len(links) > 0:
-        avg_h = round((len(h_links) * 100) / len(sc_links), 2)
+        avg_h = round((total_h * 100) / total_url, 2)
         # avg_h = round((len(h_links) * 100) / (len(h_links) + len(uh_links)), 2)
     summary = f"""____________Summary______________
 Webpage Title: {title}
-Total link: {len(sc_links)}
-Total Healthy link: {len(h_links)}
-Total Broken link: {len(uh_links)}
+Total link: {total_url}
+Total Healthy link: {total_h}
+Total Broken link: {total_uh}
 Average Healthy linking: {avg_h} %
 """
     web_page['s'] = summary
@@ -180,6 +213,9 @@ Average Healthy linking: {avg_h} %
     web_page['h_links'] = h_links
     web_page['uh_links'] = uh_links
     web_page['avg_h'] = avg_h
+    web_page['total_url'] = total_url
+    web_page['total_h'] = total_h
+    web_page['total_uh'] = total_uh
     # web_page['display'] = display_sources
     return web_page
 
@@ -193,6 +229,7 @@ def st_ui():
     st.info("Developed by Oghli")
     st.header("Enter a web page url to check it")
     url = st.text_input(label='Web Site URL', placeholder='type your url')
+    # url_validate = st.checkbox("Validate Broken Links **[Slow Mode]**")
     if url:
         start = time.time()
         analyze_result = analyze_webpage_opt(url)
@@ -203,18 +240,9 @@ def st_ui():
             st.subheader("Brief Information")
             summary += f"Analyzing Elapsed Time: {round(end - start, 2)} seconds"
             st.text(summary)
-            url_health = ['HEALTHY', 'BROKEN']
-            values = [len(analyze_result['h_links']), len(analyze_result['uh_links'])]
-            fig = plt.Figure(
-                plt.Pie(
-                    labels=url_health,
-                    values=values,
-                    hoverinfo="label+percent",
-                    textinfo="percent",
-                    marker=dict(colors=['#83c9ff', '#b2182b'])
-                ))
+            pie_fig = plot_pie(analyze_result['total_h'], analyze_result['total_uh'])
             st.header("URL HEALTH")
-            st.plotly_chart(fig)
+            st.plotly_chart(pie_fig)
             st.subheader("Detailed Information")
             if analyze_result['h_links']:
                 st.write("##### _Healthy Links Source_")
