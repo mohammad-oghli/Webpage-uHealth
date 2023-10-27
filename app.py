@@ -187,14 +187,6 @@ def analyze_webpage_opt(wp_url):
         return msg
     # print(display_sources(sc_links))
     fetch_all(sc_links)
-    # Validate broken links
-    # for i, url in enumerate(uh_links):
-    #     try:
-    #         requests.get(url['sc_link'], timeout=6)
-    #         del h_links[i]
-    #         # print(res.status_code)
-    #     except (exceptions.ConnectionError, exceptions.Timeout, exceptions.InvalidSchema):
-    #         pass
     total_url = len(sc_links)
     total_uh = len(uh_links)
     total_h = total_url - total_uh
