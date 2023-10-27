@@ -227,7 +227,7 @@ def st_ui():
     st.title("Web Page Linking Health")
     st.caption("Meta Data Validation")
     st.info("Developed by Oghli")
-    st.header("Enter a web page url to check it")
+    st.header("Enter a web page URL to check it")
     url = st.text_input(label='Web Site URL', placeholder='type your url')
     # url_validate = st.checkbox("Validate Broken Links **[Slow Mode]**")
     if url:
