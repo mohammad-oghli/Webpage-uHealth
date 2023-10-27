@@ -228,12 +228,14 @@ def st_ui():
     st.caption("Meta Data Validation")
     st.info("Developed by Oghli")
     st.header("Enter a web page URL to check it")
-    url = st.text_input(label='Web Site URL', placeholder='type your url')
+    url = st.text_input(label='Website URL', placeholder='type your url')
     # url_validate = st.checkbox("Validate Broken Links **[Slow Mode]**")
     if url:
-        start = time.time()
-        analyze_result = analyze_webpage_opt(url)
-        end = time.time()
+        with st.spinner('Please wait while Analyzing Website URLs...'):
+            start = time.time()
+            analyze_result = analyze_webpage_opt(url)
+            end = time.time()
+        st.success('Successfully Finished!')
         print(f'Analyzing: {end - start} seconds')
         if type(analyze_result) is dict:
             summary = analyze_result['s']
